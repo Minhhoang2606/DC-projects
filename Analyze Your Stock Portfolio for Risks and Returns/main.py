@@ -1,3 +1,4 @@
+# pylint: disable=all
 '''
 Analyse Stock Portfiolio for Risks and Returns
 @Author: Henry Ha
@@ -7,7 +8,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pypfopt.efficient_frontier import EfficientFrontier
-from pypfopt import risk_models, expected_returns
+from pypfopt import expected_returns
+from pypfopt import risk_models
 
 # Loading data
 stock_prices_df = pd.read_csv("faang_stocks.csv", index_col="Date")
@@ -40,9 +42,9 @@ print(f"Sharpe Ratio: {benchmark_sharpe_ratio:.4f}")
 
 # Calculate expected returns and the covariance matrix
 avg_returns = returns_df.mean() * 252
-cov_mat = returns_df.cov() * 252
+cov_mat = risk_models.sample_cov(stock_prices_df, frequency=252)
 
-# TODO: 2nd portfolio, Optimize for minimum volatility
+# 2nd portfolio: Minimum volatility optimization
 ef = EfficientFrontier(avg_returns, cov_mat)
 weights = ef.min_volatility()
 mv_portfolio = pd.Series(weights, index=stock_prices_df.columns)
@@ -60,7 +62,7 @@ print(f"Portfolio Volatility: {mv_volatility:.4f}")
 print(f"Sharpe Ratio (Min Volatility): {mv_sharpe:.4f}")
 
 
-# TODO: 3rd portfolio, Optimize for maximum Sharpe ratio
+#TODO: 3rd portfolio, Optimize for maximum Sharpe ratio
 ef = EfficientFrontier(avg_returns, cov_mat)
 ms_weights = ef.max_sharpe(risk_free_rate=0)
 ms_portfolio = pd.Series(ms_weights, index=stock_prices_df.columns)
@@ -91,5 +93,4 @@ for container in ax.containers:
 
 plt.tight_layout()
 plt.show()
-
 
