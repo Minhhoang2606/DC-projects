@@ -138,6 +138,25 @@ plt.title('Gross Margin Trends (All Companies)')
 plt.tight_layout()
 plt.show()
 
+# Group by company type and calculate the mean gross margin
+gross_margin_by_type = income_statement.groupby('comp_type')['Gross Margin'].mean().reset_index()
+
+# Plot the data
+plt.figure(figsize=(10, 6))
+bars = plt.bar(gross_margin_by_type['comp_type'], gross_margin_by_type['Gross Margin'], color='skyblue')
+plt.xlabel('Company Type')
+plt.ylabel('Average Gross Margin')
+plt.title('Comparison of Gross Margin by Company Type')
+plt.xticks(rotation=45)
+
+# Add value labels on each bar
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.2f}', ha='center', va='bottom')
+
+plt.tight_layout()
+plt.show()
+
 # Operating Margin Plot with Labels
 plt.figure(figsize=(12, 8))
 
@@ -163,6 +182,27 @@ for company in income_statement['company'].unique():
 plt.xlabel('Year')
 plt.ylabel('Operating Margin')
 plt.title('Operating Margin Trends (All Companies)')
+plt.tight_layout()
+plt.show()
+
+# Group the data by 'Year' and 'comp_type' to calculate the mean Operating Margin for each type
+operating_margin_by_type = income_statement.groupby(['Year', 'comp_type'])['Operating Margin'].mean().reset_index()
+
+# Plotting the Operating Margin Trends by Company Type
+plt.figure(figsize=(12, 8))
+for comp_type in operating_margin_by_type['comp_type'].unique():
+    comp_type_data = operating_margin_by_type[operating_margin_by_type['comp_type'] == comp_type]
+    plt.plot(
+        comp_type_data['Year'],
+        comp_type_data['Operating Margin'],
+        marker='x',
+        label=f'{comp_type}'
+    )
+
+plt.xlabel('Year')
+plt.ylabel('Average Operating Margin')
+plt.title('Operating Margin Trends by Company Type')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title='Company Type')
 plt.tight_layout()
 plt.show()
 
@@ -210,5 +250,25 @@ plt.xlabel('Company')
 plt.ylabel('Gross Margin')
 plt.title('Gross Margin by Company')
 plt.xticks(rotation=90)
+plt.tight_layout()
+plt.show()
+
+# Assuming 'income_statement' has the calculated 'Gross Margin' and 'Debt-to-Equity Ratio'
+# Rename for plotting
+data = income_statement.copy()
+data['profitability_ratio'] = data['Gross Margin']
+data['leverage_ratio'] = data['Debt-to-Equity']
+
+# Create subplots for each company type
+unique_types = data['comp_type'].unique()
+fig, axes = plt.subplots(1, len(unique_types), figsize=(15, 5), sharey=True)
+
+for ax, comp_type in zip(axes, unique_types):
+    subset = data[data['comp_type'] == comp_type]
+    sns.regplot(x='leverage_ratio', y='profitability_ratio', data=subset, ax=ax, ci=95, scatter_kws={'alpha': 0.7})
+    ax.set_title(f'{comp_type.capitalize()} Companies')
+    ax.set_xlabel('Leverage Ratio (Debt-to-Equity)')
+    ax.set_ylabel('Profitability Ratio (Gross Margin)')
+
 plt.tight_layout()
 plt.show()
